@@ -1,0 +1,49 @@
+---
+#- hosts: localhost
+#  connection: local
+#  vars_files:
+#    - config-vars.yml
+#  tags: sshkey
+#
+#  tasks:
+#    - name: ssh keys
+#      import_role: 
+#        name: gluster
+#        tasks_from: ssh-keys.yml
+#    - name: Generate SSH key to upload to servers
+#      command: ssh-keygen -t rsa -N "" -f /tmp/{{ reg_user }}-id_rsa creates=/tmp/{{ reg_user }}-id_rsa
+#      register: sshkey
+
+
+- name: Configure Gluster servers
+  hosts: gluster-prd
+  become: yes
+  remote_user: "{{ reg_user }}"
+  vars_files:
+    - config-vars.yml
+
+  tasks:
+    - name: Update OS
+      import_role:
+        name: base_os
+        tasks_from: prepare.yml
+
+    - name: Install Gluster software
+      import_role: 
+        name: gluster
+        tasks_from: install-gluster.yml
+
+- name: Gdeploy
+  hosts: gluster-prd[0]
+  remote_user: "{{ reg_user }}"
+  #remote_user: admin
+  vars_files:
+    - config-vars.yml
+  tags: gdeploy
+
+  tasks:
+    - import_role:
+        name: gluster
+        tasks_from: install-gdeploy.yml
+
+

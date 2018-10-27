@@ -1,0 +1,8 @@
+virt-install --import --name {{ item.key }}
+                --memory {{ item.value.mem }} --vcpus {{ item.value.cpus }}
+                --disk path={{ vm_location }}/{{ item.key }}.{{ item.value.file_type }}
+                {% if item.value.data_disk_size is defined %}
+                --disk path={{ vm_location }}/{{ item.key }}-data.{{ item.value.file_type }},size={{ item.value.data_disk_size }}
+                {% endif %}
+                --noautoconsole --os-variant {{ item.value.os_type }}
+                --network network={{ net_name }}

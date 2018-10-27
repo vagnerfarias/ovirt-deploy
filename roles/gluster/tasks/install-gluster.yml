@@ -1,0 +1,84 @@
+---
+- name: Enable repository
+  shell: subscription-manager repos --enable {{ item }}
+  with_items: "{{ gluster_repos }}"
+  when: new_register.changed
+
+## yum packages
+- name: install required packages
+  yum:
+    name: '{{ item }}'
+  tags:
+    - gluster
+  with_items:
+    - redhat-storage-server
+  register: package_install
+
+- name: Reboot
+  shell: sleep 5 && reboot
+  async: 30
+  poll: 0
+  ignore_errors: true
+  when: package_update is changed or package_install is changed
+
+- name: Wait for the reboot to complete if there was a change.
+  wait_for_connection:
+    connect_timeout: 20
+    sleep: 5
+    delay: 5
+    timeout: 300
+  when: package_update is changed or package_install is changed
+
+- name: Ensure /root/.ssh directory exists
+  file:
+    path: /root/.ssh
+    state: directory
+    owner: root
+    group: root
+    mode: 0700
+  tags: sshkey 
+
+- name: Generate SSH key to upload to servers
+  command: ssh-keygen -t rsa -N "" -f /tmp/{{ reg_user }}-id_rsa creates=/tmp/{{ reg_user }}-id_rsa
+  delegate_to: localhost
+  run_once: true
+  register: sshkey
+
+- name: Fetch ssh host keys
+  lineinfile:
+    path: files/known_hosts
+    create: yes
+    state: present
+    line: "{{ lookup('pipe', 'ssh-keyscan -t ecdsa-sha2-nistp256 '+item) }}"
+  with_items:
+    - "{{ groups['gluster-prd'] }}"
+  delegate_to: localhost
+  run_once: true
+  tags: hostkeys
+
+- name: Copy known_hosts do gluster nodes
+  copy:
+    src: known_hosts
+    dest: /root/.ssh
+    owner: root
+    group: root
+    mode: 0644
+  tags: hostkeys
+
+- name: Copy ssh private key to first gluster host
+  copy:
+    src: /tmp/{{ reg_user }}-id_rsa
+    dest: /root/.ssh/id_rsa
+    owner: root
+    group: root
+    mode: 0600
+  run_once: true
+  tags: sshkey
+
+- name: Add ssh key to authorized keys
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', '/tmp/'+reg_user+'-id_rsa.pub') }}"
+  tags: sshkey 
+

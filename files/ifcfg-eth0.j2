@@ -1,0 +1,8 @@
+DEVICE=eth0
+BOOTPROTO=none
+ONBOOT=yes
+IPADDR={{ item.value.ip_addr }}
+NETMASK={{ bridge_netmask }}
+GATEWAY={{ bridge_ip_addr }}
+DNS1={{ bridge_ip_addr }}
+

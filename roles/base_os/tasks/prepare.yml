@@ -1,0 +1,54 @@
+---
+#- name: import subscription manager information
+#  include_vars: "rhsm.yml"
+#  tags: 
+#    - always
+
+- name: register the server
+  redhat_subscription:
+    state: present
+    activationkey: "{{ activation_key }}"
+    org_id: "{{ rhsm_org_id }}"
+  register: new_register
+  tags: 
+    - always
+
+- name: If first time - Disable all repos
+  shell: subscription-manager repos --disable=*
+  when: new_register.changed
+  tags: 
+    - always
+
+- name: Enable base repository
+  shell: subscription-manager repos --enable rhel-7-server-rpms
+  when: new_register.changed
+  tags: 
+    - always
+
+## yum update
+- name: update packages
+  yum:
+    name: '*'
+    state: latest
+  tags:
+    - always
+  register: package_update
+  # Initial update only.
+  # Subsequent updates should be handled by another play
+  when: new_register.changed
+
+#- name: Reboot
+#  shell: sleep 5 && reboot
+#  async: 30
+#  poll: 0
+#  ignore_errors: true
+#  when: package_update is changed 
+#
+#- name: Wait for the reboot to complete if there was a change.
+#  wait_for_connection:
+#    connect_timeout: 20
+#    sleep: 5
+#    delay: 5
+#    timeout: 300
+#  when: package_update is changed 
+#

@@ -1,0 +1,48 @@
+---
+vm_location: "/home/VirtualMachines"
+root_pass: "r3dh4t1!"
+disk_image: "images/rhel-server-7.5-update-4-x86_64-kvm.qcow2"
+prepare_image: false
+
+#size in GB
+root_disk_size: "15"
+
+reg_user: admin
+reg_user_pass: "r3dh4t1!"
+reg_user_sshkey: "/home/vfarias/.ssh/id_rsa.pub"
+ssh_host_pub_key_file: /etc/ssh/ssh_host_ecdsa_key.pub
+
+net_name: demo
+bridge_name: virbr3
+bridge_ip_addr: 192.168.8.1
+bridge_netmask: 255.255.255.0
+domain_name: example.com
+
+gluster_repos:
+  - rh-gluster-3-for-rhel-7-server-rpms
+
+#rhvm-repos:
+#  - 
+
+guests:
+  gluster01:
+    mem: 1024
+    cpus: 1
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.8.11
+    data_disk_size: 20
+  gluster02:
+    mem: 1024
+    cpus: 1
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.8.12
+    data_disk_size: 20
+  gluster03:
+    mem: 1024
+    cpus: 1
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.8.13
+    data_disk_size: 5

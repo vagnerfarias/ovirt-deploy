@@ -1,0 +1,33 @@
+---
+- block:
+  - name: Enable repository
+    rhsm_repository: 
+      name: rhel-7-server-ansible-2-rpms
+    #when: new_register.changed
+      
+  - name: install required packages
+    yum:
+      name: "{{ item }}"
+    with_items:
+      - ansible
+      - gdeploy
+
+  - name: Copy gdeploy configuration file
+    copy:
+      src: gdeploy.conf
+      dest: /root/
+
+  # TODO: Identify a better way to check if gdeploy was
+  # already run
+  - name: Check if volumes were already created
+    shell: gluster volume info data
+    register: volume_exist
+    ignore_errors: yes
+
+  - name: Run gdeploy
+    command: gdeploy -c /root/gdeploy.conf
+    when: volume_exist.rc != 0
+  become: yes
+
+
+

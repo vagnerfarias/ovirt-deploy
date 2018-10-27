@@ -1,0 +1,5 @@
+gluster_repos:
+  - rh-gluster-3-for-rhel-7-server-rpms
+
+#rhvm-repos:
+#  - 

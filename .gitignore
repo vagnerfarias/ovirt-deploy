@@ -1,0 +1,5 @@
+hosts
+images/*
+group_vars/all/rhsm.yml
+*.retry
+.swp
