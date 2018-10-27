@@ -63,7 +63,8 @@
               virt-customize --copy-in
               files/ifcfg-eth0.{{ item.key }}:/etc/sysconfig/network-scripts/ --move
               /etc/sysconfig/network-scripts/ifcfg-eth0.{{ item.key }}:/etc/sysconfig/network-scripts/ifcfg-eth0
-              --hostname {{ item.key }}.{{ domain_name|default('example.com') }} -a
+              --hostname {{ item.key }}.{{ domain_name|default('example.com') }}
+              --selinux-relabel -a
               {{ vm_location}}/{{ item.key }}.{{ item.value.file_type }}
       with_dict: "{{ guests }}"
       when: new_disk.changed
