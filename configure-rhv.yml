@@ -1,0 +1,31 @@
+---
+- name: Configure RHV servers
+  hosts: rhv-prd
+  become: yes
+  remote_user: "{{ reg_user }}"
+  vars_files:
+    - config-vars.yml
+
+  tasks:
+    - name: Update OS
+      import_role:
+        name: base_os
+        tasks_from: prepare.yml
+
+- name: Setup RHV Manager
+  hosts: 192.168.8.21
+  remote_user: "{{ reg_user }}"
+  become: yes
+  vars_files:
+    - config-vars.yml
+
+  vars:
+    - ovirt_engine_setup_version: '4.2'
+    - ovirt_engine_setup_organization: 'rhvm.example.com'
+    - ovirt_engine_setup_product_type: 'rhv'
+    - ovirt_engine_setup_accept_defaults: true
+
+  roles:
+    - rhv
+    - oVirt.engine-setup
+
