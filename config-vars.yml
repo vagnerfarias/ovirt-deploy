@@ -18,6 +18,16 @@ bridge_ip_addr: 192.168.8.1
 bridge_netmask: 255.255.255.0
 domain_name: example.com
 
+ovirt_engine_setup_admin_password: "r3dh4t1!"
+
+
+rhvm_repos:
+  - rhel-7-server-supplementary-rpms
+  - rhel-7-server-rhv-4.2-manager-rpms
+  - rhel-7-server-rhv-4-manager-tools-rpms
+  - rhel-7-server-ansible-2-rpms
+  - jb-eap-7-for-rhel-7-server-rpms
+
 gluster_repos:
   - rh-gluster-3-for-rhel-7-server-rpms
 
@@ -46,3 +56,10 @@ guests:
     file_type: qcow2
     ip_addr: 192.168.8.13
     data_disk_size: 5
+  rhvm:
+    mem: 2048
+    cpus: 2
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.8.21
+

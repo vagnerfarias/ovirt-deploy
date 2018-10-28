@@ -58,6 +58,11 @@
         dest: "files/ifcfg-eth0.{{ item.key }}"
       with_dict: "{{ guests }}"
 
+    - name: get list of VMs
+      virt:
+        command: "list_vms"
+      register: vms 
+
     - name: configure guest IP address on image
       command: >
               virt-customize --copy-in
@@ -67,12 +72,7 @@
               --selinux-relabel -a
               {{ vm_location}}/{{ item.key }}.{{ item.value.file_type }}
       with_dict: "{{ guests }}"
-      when: new_disk.changed
-
-    - name: get list of VMs
-      virt:
-        command: "list_vms"
-      register: vms 
+      when: new_disk.changed and item.key not in vms.list_vms
 
     - name: create vm
       command: >
