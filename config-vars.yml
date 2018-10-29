@@ -61,7 +61,7 @@ guests:
     data_disk_size: 5
     role: gluster
   rhvm:
-    mem: 2048
+    mem: 4096
     cpus: 2
     os_type: rhel7
     file_type: qcow2
