@@ -1,0 +1,91 @@
+---
+- name: Configure RHV hosts
+  hosts: rhvh-prd
+  become: yes
+  remote_user: "{{ reg_user }}"
+  vars_files:
+    - config-vars.yml
+
+  tasks:
+    - name: Update OS
+      import_role:
+        name: base_os
+        tasks_from: prepare.yml
+
+    - name: Enable RHV hosts repositories
+      shell: subscription-manager repos --enable {{ item }}
+      with_items: "{{ rhvh_repos }}"
+
+- name: oVirt infra
+  hosts: 192.168.8.21
+  #connection: local
+  remote_user: "{{ reg_user }}"
+  gather_facts: false
+  vars_files:
+    - config-vars.yml
+  tags: ovirt-infra
+
+  vars:
+     engine_url: https://rhvm.example.com/ovirt-engine/api
+     engine_user: admin@internal
+     engine_password: "{{ ovirt_engine_setup_admin_password }}" 
+     #engine_cafile: /etc/pki/ovirt-engine/ca.pem
+     data_center_name: mydatacenter
+     compatibility_version: 4.2
+
+     clusters:
+      - name: production
+        cpu_type: Intel Conroe Family
+        profile: development
+
+     hosts:
+      - name: rhvh01.example.com
+        address: 192.168.8.22
+        cluster: production
+        password: "{{ root_pass }}"
+
+     storages:
+       master:
+         master: true
+         state: present
+         glusterfs:
+           address: 192.168.8.11
+           path: /rhv-master
+       glusterSD1:
+         master: false
+         state: present
+         glusterfs:
+           address: 192.168.8.11
+           path: /data
+
+     logical_networks:
+       - name: mynetwork
+         clusters:
+           - name: production
+             assigned: yes
+             required: no
+             display: no
+             migration: yes
+             gluster: no
+
+  pre_tasks:
+    - name: Login to oVirt
+      ovirt_auth:
+        url: "{{ engine_url }}"
+        username: "{{ engine_user }}"
+        password: "{{ engine_password }}"
+        ca_file: "{{ engine_cafile | default(omit) }}"
+        insecure: "{{ engine_insecure | default(true) }}"
+      tags:
+        - always
+
+  roles:
+    - oVirt.infra
+
+  post_tasks:
+    - name: Logout from oVirt
+      ovirt_auth:
+        state: absent
+        ovirt_auth: "{{ ovirt_auth }}"
+      tags:
+        - always

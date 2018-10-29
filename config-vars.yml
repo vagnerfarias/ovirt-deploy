@@ -28,11 +28,12 @@ rhvm_repos:
   - rhel-7-server-ansible-2-rpms
   - jb-eap-7-for-rhel-7-server-rpms
 
+rhvh_repos:
+  - rhel-7-server-rhv-4-mgmt-agent-rpms
+  - rhel-7-server-ansible-2-rpms
+
 gluster_repos:
   - rh-gluster-3-for-rhel-7-server-rpms
-
-#rhvm-repos:
-#  - 
 
 guests:
   gluster01:
@@ -42,6 +43,7 @@ guests:
     file_type: qcow2
     ip_addr: 192.168.8.11
     data_disk_size: 20
+    role: gluster
   gluster02:
     mem: 1024
     cpus: 1
@@ -49,6 +51,7 @@ guests:
     file_type: qcow2
     ip_addr: 192.168.8.12
     data_disk_size: 20
+    role: gluster
   gluster03:
     mem: 1024
     cpus: 1
@@ -56,10 +59,18 @@ guests:
     file_type: qcow2
     ip_addr: 192.168.8.13
     data_disk_size: 5
+    role: gluster
   rhvm:
     mem: 2048
     cpus: 2
     os_type: rhel7
     file_type: qcow2
     ip_addr: 192.168.8.21
-
+    role: rhvm
+  rhvh01:
+    mem: 4096
+    cpus: 2
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.8.22
+    role: rhvh
