@@ -68,6 +68,16 @@
              migration: yes
              gluster: no
 
+     host_networks:
+       - name: rhvh01.example.com
+         check: true
+         save: true
+         interface: eth1
+         networks: 
+           - name: mynetwork
+             boot_protocol: none         
+
+
   pre_tasks:
     - name: Login to oVirt
       ovirt_auth:
