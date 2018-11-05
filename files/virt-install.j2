@@ -6,3 +6,10 @@ virt-install --import --name {{ item.key }}
                 {% endif %}
                 --noautoconsole --os-variant {{ item.value.os_type }}
                 --network network={{ net_name }}
+                {% if item.value.vm_net is defined %}
+                --network network={{ net_name }}
+                {% endif %}
+                {% if item.value.role == 'rhvh'  %}
+                --cpu host
+                {% endif %}
+
