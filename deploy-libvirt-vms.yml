@@ -1,0 +1,88 @@
+---
+- name: create VMs
+  hosts: localhost
+  connection: local
+  become: true
+  vars_files:
+    - config-vars.yml
+
+  tasks:
+    - name: create libvirt network {{ net_name }}
+      virt_net:
+        command: define
+        name: "{{ net_name }}"
+        xml: '{{ lookup("template", "files/network.xml.j2") }}'
+  
+    - name: Start network {{ net_name }}
+      virt_net:
+        name: "{{ net_name }}"
+        state: active
+  
+    - name: Config network {{ net_name }} to start on boot
+      virt_net:
+        name: "{{ net_name }}"
+        autostart: yes
+
+    - name: Generate sudoers file
+      template: 
+        src: files/sudo.j2
+        dest: "files/{{ reg_user }}"
+
+    - name: prepare guest image
+      command: >
+              virt-customize --root-password password:{{ root_pass }} 
+              --copy-in files/{{ reg_user }}:/etc/sudoers.d
+              --run-command 'touch /etc/cloud/cloud-init.disabled'
+              --run-command 'useradd -m {{ reg_user }}'
+              --run-command 'echo {{ reg_user_pass }} | passwd --stdin {{ reg_user }}' 
+              --ssh-inject {{ reg_user }}:file:{{ reg_user_sshkey }}
+              --selinux-relabel -a {{ disk_image }}
+      when: prepare_image
+
+    - name: get VM disks
+      command: "ls {{ vm_location }}"
+      register: disks
+      changed_when: "disks.rc != 0"
+
+    - name: create disk
+      copy:
+        src: "{{ disk_image }}"
+        dest: "{{ vm_location}}/{{ item.key }}.{{ item.value.file_type }}"
+      when: item.key not in disks.stdout
+      with_dict: "{{ guests }}"
+      register: new_disk
+
+    - name: Generate guest IP address configuration file
+      template:
+        src: "files/ifcfg-eth0.j2"
+        dest: "files/ifcfg-eth0.{{ item.key }}"
+      with_dict: "{{ guests }}"
+
+    - name: get list of VMs
+      virt:
+        command: "list_vms"
+      register: vms 
+
+    - name: configure guest IP address on image
+      command: >
+              virt-customize --copy-in
+              files/ifcfg-eth0.{{ item.key }}:/etc/sysconfig/network-scripts/ --move
+              /etc/sysconfig/network-scripts/ifcfg-eth0.{{ item.key }}:/etc/sysconfig/network-scripts/ifcfg-eth0
+              --hostname {{ item.key }}.{{ domain_name|default('example.com') }}
+              --selinux-relabel -a
+              {{ vm_location}}/{{ item.key }}.{{ item.value.file_type }}
+      with_dict: "{{ guests }}"
+      when: new_disk.changed and item.key not in vms.list_vms
+
+    - name: create vm
+      command: >
+              {{ lookup("template", "files/virt-install.j2") }}
+      when: item.key not in vms.list_vms
+      with_dict: "{{ guests }}"
+
+    - name: start vm
+      virt:
+        name: "{{ item.key }}"
+        state: running
+      with_dict: "{{ guests }}"
+
