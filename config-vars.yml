@@ -73,4 +73,5 @@ guests:
     os_type: rhel7
     file_type: qcow2
     ip_addr: 192.168.8.22
+    vm_net: "{{ net_name }}"
     role: rhvh
