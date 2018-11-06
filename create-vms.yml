@@ -1,0 +1,54 @@
+---
+- name: Create VMs
+  hosts: 192.168.8.21
+  gather_facts: false
+  remote_user: "{{ reg_user }}"
+  vars_files:
+    - config-vars.yml
+
+  vars:
+    engine_url: https://rhvm.example.com/ovirt-engine/api
+    engine_user: admin@internal
+    engine_cafile: /etc/pki/ovirt-engine/ca.pem
+    engine_password: "{{ ovirt_engine_setup_admin_password }}"
+
+    httpd_vm:
+      cluster: production
+      domain: example.com
+      template: rhel7.5_template
+      memory: 2GiB
+      cores: 2
+      #ssh_key: "{{ lookup('file', '/tmp/'+reg_user+'-id_rsa.pub') }}"
+      #disks:
+      #  - size: 10GiB
+      #    name: data
+      #    storage_domain: mynfsstorage
+      #    interface: virtio
+
+    vms:
+      - name: apache-vm-1
+        tag: httpd_vm
+        profile: "{{ httpd_vm }}"
+        state: running
+        cloud_init_persist: false
+        cloud_init: {
+              timezone: America/Sao_Paulo,
+              user_name: "{{ reg_user }}",
+              root_password: 'r3dh4t1!',
+              authorized_ssh_keys: "{{ lookup('file', '/tmp/'+reg_user+'-id_rsa.pub') }}",
+              dns_servers: 192.168.8.1,
+              nic_boot_protocol: static,
+              nic_ip_address: 192.168.8.101,
+              nic_netmask: 255.255.255.0,
+              nic_gateway: 192.168.8.1,
+              nic_name: eth0,
+              nic_on_boot: true, 
+              custom_script: "runcmd:\n
+                               - touch /etc/cloud/cloud-init.disabled\n"
+              }
+        #- name: apache-vm-2
+        #  tag: httpd_vm
+        #  profile: "{{ httpd_vm }}"
+
+  roles:
+    - oVirt.vm-infra

@@ -1,0 +1,42 @@
+---
+- hosts: localhost
+  connection: local
+  become: true
+  vars_files:
+    - config-vars.yml
+
+  tasks:
+    - name: Truncate /etc/resolv.conf from RHEL template
+      command: virt-customize --truncate /etc/resolv.conf -a /var/www/html/pub/rhel-server-7.5-update-4-x86_64-kvm.qcow2
+
+- name: Create a template from qcow
+  hosts: 192.168.8.21
+  remote_user: "{{ reg_user }}"
+  gather_facts: false
+  vars_files:
+    - config-vars.yml
+
+
+  vars:
+    engine_url: https://rhvm.example.com/ovirt-engine/api
+    engine_user: admin@internal
+    engine_password: "{{ ovirt_engine_setup_admin_password }}"
+    engine_cafile: /etc/pki/ovirt-engine/ca.pem
+
+    #qcow_url: https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2
+    qcow_url: http://192.168.8.1/pub/rhel-server-7.5-update-4-x86_64-kvm.qcow2
+    template_cluster: production
+    template_name: rhel7.5_template
+    template_memory: 2GiB
+    template_cpu: 1
+    template_disk_size: 10GiB
+    template_disk_storage: glusterSD1
+    template_type: server
+    template_nics: 
+      - { name: nic1, profile_name: mynetwork, interface: virtio }
+    template_operating_system: rhel_7x64
+    template_disk_format: cow
+    image_cache_download: false
+
+  roles:
+    - oVirt.image-template
