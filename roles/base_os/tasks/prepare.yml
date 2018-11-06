@@ -15,13 +15,13 @@
 
 - name: If first time - Disable all repos
   shell: subscription-manager repos --disable=*
-  when: new_register.changed
+  when: new_register.changed or force_repos
   tags: 
     - always
 
 - name: Enable base repository
   shell: subscription-manager repos --enable rhel-7-server-rpms
-  when: new_register.changed
+  when: new_register.changed or force_repos
   tags: 
     - always
 
@@ -35,7 +35,7 @@
   register: package_update
   # Initial update only.
   # Subsequent updates should be handled by another play
-  when: new_register.changed
+  when: new_register.changed or force_repos
 
 #- name: Reboot
 #  shell: sleep 5 && reboot

@@ -3,6 +3,7 @@ vm_location: "/home/VirtualMachines"
 root_pass: "r3dh4t1!"
 disk_image: "images/rhel-server-7.5-update-4-x86_64-kvm.qcow2"
 prepare_image: false
+force_repos: false
 
 #size in GB
 root_disk_size: "15"
