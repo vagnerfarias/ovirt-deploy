@@ -15,6 +15,7 @@
     - name: Enable RHV hosts repositories
       shell: subscription-manager repos --enable {{ item }}
       with_items: "{{ rhvh_repos }}"
+      tags: repos
 
 - name: oVirt infra
   hosts: 192.168.8.21
@@ -60,13 +61,28 @@
 
      logical_networks:
        - name: mynetwork
+         vm_network: true
          clusters:
            - name: production
              assigned: yes
-             required: no
+             required: yes
              display: no
-             migration: yes
+             migration: no
              gluster: no
+
+       # waiting for pull request #47185 to be include in RPM
+       # https://github.com/ansible/ansible/pull/47185
+       # Goal is to set vm_network to false for ovirmgmt network
+       #
+       #- name: ovirtmgmt
+       #  vm_network: false
+       #  clusters:
+       #    - name: production
+       #      assigned: yes
+       #      required: yes
+       #      display: yes
+       #      migration: yes
+       #      gluster: no
 
      host_networks:
        - name: rhvh01.example.com
@@ -75,8 +91,7 @@
          interface: eth1
          networks: 
            - name: mynetwork
-             boot_protocol: none         
-
+             boot_protocol: none
 
   pre_tasks:
     - name: Login to oVirt

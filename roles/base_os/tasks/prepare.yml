@@ -12,18 +12,21 @@
   register: new_register
   tags: 
     - always
+    - rhn
 
 - name: If first time - Disable all repos
   shell: subscription-manager repos --disable=*
   when: new_register.changed or force_repos
   tags: 
     - always
+    - rhn
 
 - name: Enable base repository
   shell: subscription-manager repos --enable rhel-7-server-rpms
   when: new_register.changed or force_repos
   tags: 
     - always
+    - rhn
 
 ## yum update
 - name: update packages
@@ -32,6 +35,7 @@
     state: latest
   tags:
     - always
+    - rhn
   register: package_update
   # Initial update only.
   # Subsequent updates should be handled by another play
