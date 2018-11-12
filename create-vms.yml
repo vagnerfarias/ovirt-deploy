@@ -35,7 +35,7 @@
               timezone: America/Sao_Paulo,
               user_name: "{{ reg_user }}",
               root_password: 'r3dh4t1!',
-              authorized_ssh_keys: "{{ lookup('file', '/tmp/'+reg_user+'-id_rsa.pub') }}",
+              authorized_ssh_keys: "{{ lookup('file', './work-files/'+reg_user+'-id_rsa.pub') }}",
               dns_servers: 192.168.8.1,
               nic_boot_protocol: static,
               nic_ip_address: 192.168.8.101,

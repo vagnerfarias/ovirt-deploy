@@ -39,9 +39,10 @@
   tags: sshkey 
 
 - name: Generate SSH key to upload to servers
-  command: ssh-keygen -t rsa -N "" -f /tmp/{{ reg_user }}-id_rsa creates=/tmp/{{ reg_user }}-id_rsa
+  command: ssh-keygen -t rsa -N "" -f ./work-files/{{ reg_user }}-id_rsa creates=./work-files/{{ reg_user }}-id_rsa
   delegate_to: localhost
   run_once: true
+  become: false
   register: sshkey
 
 - name: Fetch ssh host keys
@@ -67,7 +68,7 @@
 
 - name: Copy ssh private key to first gluster host
   copy:
-    src: /tmp/{{ reg_user }}-id_rsa
+    src: "./work-files/{{ reg_user }}-id_rsa"
     dest: /root/.ssh/id_rsa
     owner: root
     group: root
@@ -79,6 +80,6 @@
   authorized_key:
     user: root
     state: present
-    key: "{{ lookup('file', '/tmp/'+reg_user+'-id_rsa.pub') }}"
+    key: "{{ lookup('file', './work-files/'+reg_user+'-id_rsa.pub') }}"
   tags: sshkey 
 
