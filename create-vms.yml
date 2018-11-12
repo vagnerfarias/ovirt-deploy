@@ -15,7 +15,7 @@
     httpd_vm:
       cluster: production
       domain: example.com
-      template: rhel7.5_template
+      template: rhel7.6_template
       memory: 2GiB
       cores: 2
       #ssh_key: "{{ lookup('file', '/tmp/'+reg_user+'-id_rsa.pub') }}"
