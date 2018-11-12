@@ -114,3 +114,47 @@
         ovirt_auth: "{{ ovirt_auth }}"
       tags:
         - always
+
+
+- name: Remove Default Data Center
+  hosts: 192.168.8.21
+  #connection: local
+  remote_user: "{{ reg_user }}"
+  gather_facts: false
+  vars_files:
+    - config-vars.yml
+  tags: ovirt-infra
+
+  vars:
+     engine_url: https://rhvm.example.com/ovirt-engine/api
+     engine_user: admin@internal
+     engine_password: "{{ ovirt_engine_setup_admin_password }}"
+     #engine_cafile: /etc/pki/ovirt-engine/ca.pem
+     compatibility_version: 4.2
+     data_center_name: Default
+     data_center_state: absent
+     recursive_cleanup: true
+     
+
+  pre_tasks:
+    - name: Login to oVirt
+      ovirt_auth:
+        url: "{{ engine_url }}"
+        username: "{{ engine_user }}"
+        password: "{{ engine_password }}"
+        ca_file: "{{ engine_cafile | default(omit) }}"
+        insecure: "{{ engine_insecure | default(true) }}"
+      tags:
+        - always
+
+  roles:
+    - oVirt.infra
+
+  post_tasks:
+    - name: Logout from oVirt
+      ovirt_auth:
+        state: absent
+        ovirt_auth: "{{ ovirt_auth }}"
+      tags:
+        - always
+
