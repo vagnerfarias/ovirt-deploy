@@ -4,7 +4,9 @@
     rhsm_repository: 
       name: rhel-7-server-ansible-2-rpms
     #when: new_register.changed
-      
+    tags:
+      - repos
+
   - name: install required packages
     yum:
       name: "{{ item }}"
