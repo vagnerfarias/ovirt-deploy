@@ -10,7 +10,7 @@
       command: virt-customize --truncate /etc/resolv.conf -a /var/www/html/pub/rhel-server-7.6-x86_64-kvm.qcow2
 
 - name: Create a template from qcow
-  hosts: 192.168.8.21
+  hosts: ovirt-engine-prd
   remote_user: "{{ reg_user }}"
   gather_facts: false
   vars_files:

@@ -1,6 +1,6 @@
 ---
 - name: Create VMs
-  hosts: 192.168.8.21
+  hosts: ovirt-engine-prd
   gather_facts: false
   remote_user: "{{ reg_user }}"
   vars_files:
