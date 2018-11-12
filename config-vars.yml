@@ -1,7 +1,7 @@
 ---
 vm_location: "/home/VirtualMachines"
 root_pass: "r3dh4t1!"
-disk_image: "images/rhel-server-7.5-update-4-x86_64-kvm.qcow2"
+disk_image: "images/rhel-server-7.6-x86_64-kvm.qcow2"
 prepare_image: false
 force_repos: false
 
@@ -43,7 +43,7 @@ guests:
     os_type: rhel7
     file_type: qcow2
     ip_addr: 192.168.8.11
-    data_disk_size: 20
+    data_disk_size: 25
     role: gluster
   gluster02:
     mem: 1024
@@ -51,7 +51,7 @@ guests:
     os_type: rhel7
     file_type: qcow2
     ip_addr: 192.168.8.12
-    data_disk_size: 20
+    data_disk_size: 25
     role: gluster
   gluster03:
     mem: 1024
@@ -59,7 +59,7 @@ guests:
     os_type: rhel7
     file_type: qcow2
     ip_addr: 192.168.8.13
-    data_disk_size: 5
+    data_disk_size: 10
     role: gluster
   rhvm:
     mem: 4096
