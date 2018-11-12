@@ -3,3 +3,4 @@ images/*
 group_vars/all/rhsm.yml
 *.retry
 .swp
+*-id_rsa*
