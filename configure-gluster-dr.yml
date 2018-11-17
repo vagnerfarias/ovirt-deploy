@@ -1,6 +1,7 @@
 ---
-- name: Configure Gluster servers
-  hosts: gluster-prd
+# Disaster Recovery environment tasks
+- name: Configure Gluster servers - Disaster Recovery
+  hosts: gluster-dr
   become: yes
   remote_user: "{{ reg_user }}"
   vars_files:
@@ -17,8 +18,8 @@
         name: gluster
         tasks_from: install-gluster.yml
 
-- name: Gdeploy
-  hosts: gluster-prd[0]
+- name: Gdeploy - Disaster Recovery
+  hosts: gluster-dr[0]
   remote_user: "{{ reg_user }}"
   #remote_user: admin
   vars_files:
@@ -30,8 +31,4 @@
         name: gluster
         tasks_from: install-gdeploy.yml
 
-# Disaster Recovery environment
-- name: Disaster Recovery tasks
-  import_playbook: ./configure-gluster-dr.yml
-  when: disaster_recovery
 
