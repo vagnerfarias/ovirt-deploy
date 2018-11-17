@@ -4,6 +4,7 @@ root_pass: "r3dh4t1!"
 disk_image: "images/rhel-server-7.6-x86_64-kvm.qcow2"
 prepare_image: false
 force_repos: false
+disaster_recovery: true
 
 #size in GB
 root_disk_size: "15"
@@ -21,6 +22,9 @@ domain_name: example.com
 
 ovirt_engine_setup_admin_password: "r3dh4t1!"
 
+dr_bridge_ip_addr: 192.168.70.1
+dr_bridge_netmask: 255.255.255.0
+dr_domain_name: example.com
 
 rhvm_repos:
   - rhel-7-server-supplementary-rpms
@@ -76,3 +80,45 @@ guests:
     ip_addr: 192.168.8.22
     vm_net: "{{ net_name }}"
     role: rhvh
+ 
+dr_guests:
+  dr-gluster01:
+    mem: 1024
+    cpus: 1
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.70.11
+    data_disk_size: 25
+    role: gluster
+  dr-gluster02:
+    mem: 1024
+    cpus: 1
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.70.12
+    data_disk_size: 25
+    role: gluster
+  dr-gluster03:
+    mem: 1024
+    cpus: 1
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.70.13
+    data_disk_size: 10
+    role: gluster
+  dr-rhvm:
+    mem: 4096
+    cpus: 2
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.70.21
+    role: rhvm
+  dr-rhvh01:
+    mem: 4096
+    cpus: 2
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.70.22
+    vm_net: "{{ net_name }}"
+    role: rhvh
+

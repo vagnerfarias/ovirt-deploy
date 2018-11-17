@@ -66,6 +66,29 @@
     mode: 0644
   tags: hostkeys
 
+- name: Fetch ssh host keys - disaster recovery
+  lineinfile:
+    path: files/known_hosts-dr
+    create: yes
+    state: present
+    line: "{{ lookup('pipe', 'ssh-keyscan -t ecdsa-sha2-nistp256 '+item) }}"
+  with_items:
+    - "{{ groups['gluster-dr'] }}"
+  delegate_to: localhost
+  run_once: true
+  when: disaster_recovery
+  tags: hostkeys
+
+- name: Copy known_hosts do gluster nodes - disaster recovery
+  copy:
+    src: known_hosts-dr
+    dest: /root/.ssh/known_hosts
+    owner: root
+    group: root
+    mode: 0644
+  when: disaster_recovery
+  tags: hostkeys
+
 - name: Copy ssh private key to first gluster host
   copy:
     src: "./work-files/{{ reg_user }}-id_rsa"
@@ -74,6 +97,19 @@
     group: root
     mode: 0600
   run_once: true
+  delegate_to: "{{ groups['gluster-prd'][0] }}"
+  tags: sshkey
+
+- name: Copy ssh private key to first gluster host - disaster recovery
+  copy:
+    src: "./work-files/{{ reg_user }}-id_rsa"
+    dest: /root/.ssh/id_rsa
+    owner: root
+    group: root
+    mode: 0600
+  run_once: true
+  delegate_to: "{{ groups['gluster-dr'][0] }}"
+  when: disaster_recovery
   tags: sshkey
 
 - name: Add ssh key to authorized keys

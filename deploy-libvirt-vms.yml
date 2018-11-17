@@ -52,11 +52,26 @@
       with_dict: "{{ guests }}"
       register: new_disk
 
+    - name: create disk - disaster recovery vms
+      copy:
+        src: "{{ disk_image }}"
+        dest: "{{ vm_location}}/{{ item.key }}.{{ item.value.file_type }}"
+      when: item.key not in disks.stdout and disaster_recovery
+      with_dict: "{{ dr_guests }}"
+      register: new_disk
+
     - name: Generate guest IP address configuration file
       template:
         src: "files/ifcfg-eth0.j2"
         dest: "files/ifcfg-eth0.{{ item.key }}"
       with_dict: "{{ guests }}"
+
+    - name: Generate guest IP address configuration file - disaster recovery vms
+      template:
+        src: "files/dr-ifcfg-eth0.j2"
+        dest: "files/ifcfg-eth0.{{ item.key }}"
+      with_dict: "{{ dr_guests }}"
+      when: disaster_recovery
 
     - name: get list of VMs
       virt:
@@ -74,15 +89,38 @@
       with_dict: "{{ guests }}"
       when: new_disk.changed and item.key not in vms.list_vms
 
+    - name: configure guest IP address on image - disaster recovery vms
+      command: >
+              virt-customize --copy-in
+              files/ifcfg-eth0.{{ item.key }}:/etc/sysconfig/network-scripts/ --move
+              /etc/sysconfig/network-scripts/ifcfg-eth0.{{ item.key }}:/etc/sysconfig/network-scripts/ifcfg-eth0
+              --hostname {{ item.key }}.{{ domain_name|default('example.com') }}
+              --selinux-relabel -a
+              {{ vm_location}}/{{ item.key }}.{{ item.value.file_type }}
+      with_dict: "{{ dr_guests }}"
+      when: new_disk.changed and item.key not in vms.list_vms and disaster_recovery
+
     - name: create vm
       command: >
               {{ lookup("template", "files/virt-install.j2") }}
       when: item.key not in vms.list_vms
       with_dict: "{{ guests }}"
 
+    - name: create vm - disaster recovery vms
+      command: >
+              {{ lookup("template", "files/virt-install.j2") }}
+      when: item.key not in vms.list_vms and disaster_recovery
+      with_dict: "{{ dr_guests }}"
+
     - name: start vm
       virt:
         name: "{{ item.key }}"
         state: running
       with_dict: "{{ guests }}"
+      
+    - name: start vm - disaster recovery vms
+      virt:
+        name: "{{ item.key }}"
+        state: running
+      with_dict: "{{ dr_guests }}"
 

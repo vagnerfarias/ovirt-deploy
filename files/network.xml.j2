@@ -7,5 +7,8 @@
   </forward>
   <bridge name='{{ bridge_name }}' stp='on' delay='0'/>
   <ip address='{{ bridge_ip_addr }}' netmask='{{ bridge_netmask }}'/>
+  {% if disaster_recovery == true %}
+  <ip address='{{ dr_bridge_ip_addr }}' netmask='{{ dr_bridge_netmask }}'/>
+  {% endif %}
 </network>
 

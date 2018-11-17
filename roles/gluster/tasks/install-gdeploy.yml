@@ -15,9 +15,11 @@
       - gdeploy
 
   - name: Copy gdeploy configuration file
-    copy:
-      src: gdeploy.conf
-      dest: /root/
+    template:
+      src: gdeploy.conf.j2
+      dest: /root/gdeploy.conf
+    tags:
+      - gdeployconf
 
   # TODO: Identify a better way to check if gdeploy was
   # already run

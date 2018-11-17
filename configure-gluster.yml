@@ -16,7 +16,7 @@
 
 
 - name: Configure Gluster servers
-  hosts: gluster-prd
+  hosts: gluster-prd,gluster-dr
   become: yes
   remote_user: "{{ reg_user }}"
   vars_files:
@@ -34,7 +34,7 @@
         tasks_from: install-gluster.yml
 
 - name: Gdeploy
-  hosts: gluster-prd[0]
+  hosts: gluster-prd[0],gluster-dr[0]
   remote_user: "{{ reg_user }}"
   #remote_user: admin
   vars_files:
