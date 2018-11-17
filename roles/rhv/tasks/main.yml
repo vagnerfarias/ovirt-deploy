@@ -4,3 +4,5 @@
     shell: subscription-manager repos --enable {{ item }}
     with_items: "{{ rhvm_repos }}"
   become: yes
+  tags:
+    - repos
