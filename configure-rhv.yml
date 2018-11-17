@@ -189,3 +189,191 @@
         ovirt_auth: "{{ ovirt_auth }}"
       tags:
         - always
+
+# Disaster Recovery environment
+- name: Initial servers setup - Disaster Recovery
+  hosts: ovirt-dr
+  become: yes
+  remote_user: "{{ reg_user }}"
+  vars_files:
+    - config-vars.yml
+  tags:
+    # operating system initial setup
+    - os_setup
+
+  tasks:
+    - name: Update OS
+      import_role:
+        name: base_os
+        tasks_from: prepare.yml
+      when: disaster_recovery
+
+- name: Setup oVirt Engine - Disaster Recovery
+  hosts: ovirt-engine-dr
+  remote_user: "{{ reg_user }}"
+  become: yes
+  vars_files:
+    - config-vars.yml
+  tags:
+    - engine_setup
+
+  vars:
+    - ovirt_engine_setup_version: '4.2'
+    - ovirt_engine_setup_organization: 'dr-rhvm.example.com'
+    - ovirt_engine_setup_product_type: 'rhv'
+    - ovirt_engine_setup_accept_defaults: true
+    - ovirt_engine_setup_package_list: 
+      - firewalld
+
+  roles:
+    - { role: rhv, when: disaster_recovery }
+    - { role: oVirt.engine-setup, when: disaster_recovery }
+
+- name: Configure oVirt hosts - Disaster Recovery
+  hosts: ovirt-hosts-dr
+  become: yes
+  remote_user: "{{ reg_user }}"
+  vars_files:
+    - config-vars.yml
+
+  tasks:
+    - name: Enable RHV hosts repositories
+      shell: subscription-manager repos --enable {{ item }}
+      with_items: "{{ rhvh_repos }}"
+      when: disaster_recovery
+      tags: repos
+
+- name: Data Center configuration - Disaster Recovery
+  hosts: ovirt-engine-dr
+  #connection: local
+  remote_user: "{{ reg_user }}"
+  gather_facts: false
+  vars_files:
+    - config-vars.yml
+  tags: ovirt-infra
+
+  vars:
+     engine_url: https://dr-rhvm.example.com/ovirt-engine/api
+     engine_user: admin@internal
+     engine_password: "{{ ovirt_engine_setup_admin_password }}" 
+     #engine_cafile: /etc/pki/ovirt-engine/ca.pem
+     data_center_name: mydatacenter
+     compatibility_version: 4.2
+
+     clusters:
+      - name: dr-production
+        cpu_type: Intel Conroe Family
+        profile: development
+
+     hosts:
+      - name: dr-rhvh01.example.com
+        address: 192.168.70.22
+        cluster: dr-production
+        password: "{{ root_pass }}"
+
+     storages:
+       master:
+         master: true
+         state: present
+         glusterfs:
+           address: 192.168.70.11
+           path: /rhv-master
+
+     logical_networks:
+       - name: mynetwork
+         vm_network: true
+         clusters:
+           - name: dr-production
+             assigned: yes
+             required: yes
+             display: no
+             migration: no
+             gluster: no
+
+       # waiting for pull request #47185 to be include in RPM
+       # https://github.com/ansible/ansible/pull/47185
+       # Goal is to set vm_network to false for ovirmgmt network
+       #
+       #- name: ovirtmgmt
+       #  vm_network: false
+       #  clusters:
+       #    - name: dr-production
+       #      assigned: yes
+       #      required: yes
+       #      display: yes
+       #      migration: yes
+       #      gluster: no
+
+     host_networks:
+       - name: dr-rhvh01.example.com
+         check: true
+         save: true
+         interface: eth1
+         networks: 
+           - name: mynetwork
+             boot_protocol: none
+
+  pre_tasks:
+    - name: Login to oVirt
+      ovirt_auth:
+        url: "{{ engine_url }}"
+        username: "{{ engine_user }}"
+        password: "{{ engine_password }}"
+        ca_file: "{{ engine_cafile | default(omit) }}"
+        insecure: "{{ engine_insecure | default(true) }}"
+      tags:
+        - always
+
+  roles:
+    - { role: oVirt.infra, when: disaster_recovery }
+
+  post_tasks:
+    - name: Logout from oVirt
+      ovirt_auth:
+        state: absent
+        ovirt_auth: "{{ ovirt_auth }}"
+      tags:
+        - always
+
+
+- name: Remove Default Data Center - Disaster Recovery
+  hosts: ovirt-engine-dr
+  #connection: local
+  remote_user: "{{ reg_user }}"
+  gather_facts: false
+  vars_files:
+    - config-vars.yml
+  tags: ovirt-infra
+
+  vars:
+     engine_url: https://dr-rhvm.example.com/ovirt-engine/api
+     engine_user: admin@internal
+     engine_password: "{{ ovirt_engine_setup_admin_password }}"
+     #engine_cafile: /etc/pki/ovirt-engine/ca.pem
+     compatibility_version: 4.2
+     data_center_name: Default
+     data_center_state: absent
+     recursive_cleanup: true
+     
+
+  pre_tasks:
+    - name: Login to oVirt
+      ovirt_auth:
+        url: "{{ engine_url }}"
+        username: "{{ engine_user }}"
+        password: "{{ engine_password }}"
+        ca_file: "{{ engine_cafile | default(omit) }}"
+        insecure: "{{ engine_insecure | default(true) }}"
+      tags:
+        - always
+
+  roles:
+    - { role: oVirt.infra, when: disaster_recovery }
+
+  post_tasks:
+    - name: Logout from oVirt
+      ovirt_auth:
+        state: absent
+        ovirt_auth: "{{ ovirt_auth }}"
+      tags:
+        - always
