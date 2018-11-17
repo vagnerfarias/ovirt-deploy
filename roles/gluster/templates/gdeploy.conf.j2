@@ -136,16 +136,16 @@ arbiter_count=1
 
 [volume2]
 action=create
-volname=data
+volname={{ data_volname }}
 transport=tcp
 replica=yes
 replica_count=3
 key=group,storage.owner-uid,storage.owner-gid,network.ping-timeout,performance.strict-o-direct,network.remote-dio,cluster.granular-entry-heal,features.shard-block-size
 value=virt,36,36,30,on,off,enable,64MB
 {% if ansible_hostname|regex_search('^dr-') %}
-brick_dirs={{ groups['gluster-dr'][0] }}:/gluster_bricks/data/data,{{ groups['gluster-dr'][1] }}:/gluster_bricks/data/data,{{ groups['gluster-dr'][2] }}:/gluster_bricks/data/data
+brick_dirs={{ groups['gluster-dr'][0] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-dr'][1] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-dr'][2] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }}
 {% else %}
-brick_dirs={{ groups['gluster-prd'][0] }}:/gluster_bricks/data/data,{{ groups['gluster-prd'][1] }}:/gluster_bricks/data/data,{{ groups['gluster-prd'][2] }}:/gluster_bricks/data/data
+brick_dirs={{ groups['gluster-prd'][0] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-prd'][1] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-prd'][2] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }}
 {% endif %}
 ignore_volume_errors=no
 arbiter_count=1

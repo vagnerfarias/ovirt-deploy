@@ -14,6 +14,8 @@ reg_user_pass: "r3dh4t1!"
 reg_user_sshkey: "/home/vfarias/.ssh/id_rsa.pub"
 ssh_host_pub_key_file: /etc/ssh/ssh_host_ecdsa_key.pub
 
+data_volname: data
+
 net_name: demo
 bridge_name: virbr3
 bridge_ip_addr: 192.168.8.1
