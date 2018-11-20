@@ -8,6 +8,7 @@
   tasks:
     - name: Truncate /etc/resolv.conf from RHEL template
       command: virt-customize --truncate /etc/resolv.conf -a /var/www/html/pub/rhel-server-7.6-x86_64-kvm.qcow2
+  tags: customize
 
 - name: Create a template from qcow
   hosts: ovirt-engine-prd
@@ -40,3 +41,4 @@
 
   roles:
     - oVirt.image-template
+  tags: templates
