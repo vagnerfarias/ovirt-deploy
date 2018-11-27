@@ -29,43 +29,43 @@ The following variables from *config-vars.yml* must be configured according to y
 
 Create an ansible inventory file named *hosts* at the top directory of the cloned repository with content similar to the following, changing IP addresses it required.
 
->  [gluster-prd]
-> 192.168.8.11
-> 192.168.8.12
-> 192.168.8.13
+> [gluster-prd]  
+> 192.168.8.11  
+> 192.168.8.12  
+> 192.168.8.13  
 > 
-> [ovirt-engine-prd]
-> 192.168.8.21
+> [ovirt-engine-prd]  
+> 192.168.8.21 
 > 
-> [ovirt-hosts-prd]
-> 192.168.8.22
+> [ovirt-hosts-prd]  
+> 192.168.8.22  
 > 
-> [ovirt-prd:children] 
-> ovirt-engine-prd 
-> ovirt-hosts-prd
+> [ovirt-prd:children]  
+> ovirt-engine-prd  
+> ovirt-hosts-prd  
 > 
-> [prd:children] 
-> ovirt-prd 
-> gluster-prd
+> [prd:children]  
+> ovirt-prd  
+> gluster-prd 
 > 
-> [gluster-dr]
-> 192.168.70.11
-> 192.168.70.12
-> 192.168.70.13
+> [gluster-dr]  
+> 192.168.70.11  
+> 192.168.70.12  
+> 192.168.70.13  
 > 
-> [ovirt-engine-dr]
-> 192.168.70.21
+> [ovirt-engine-dr]  
+> 192.168.70.21  
 > 
-> [ovirt-hosts-dr]
-> 192.168.70.22
+> [ovirt-hosts-dr]  
+> 192.168.70.22  
 > 
-> [ovirt-dr:children] 
-> ovirt-engine-dr 
-> ovirt-hosts-dr
+> [ovirt-dr:children]  
+> ovirt-engine-dr  
+> ovirt-hosts-dr 
 > 
-> [dr:children] 
-> ovirt-dr 
-> gluster-dr
+> [dr:children]  
+> ovirt-dr  
+> gluster-dr 
 
 ### Optional: Deploy libvirt VMs
 If you'd like to use this only to learn how RHV and RHGS may work together, instead of deploying the software on physical servers, you may deploy everything on virtual machines and use nested virtualization features available in operating systems like Fedora 28 or Red Hat Enterprise Linux 7. 
