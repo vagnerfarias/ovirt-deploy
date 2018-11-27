@@ -10,36 +10,49 @@
     activationkey: "{{ activation_key }}"
     org_id: "{{ rhsm_org_id }}"
   register: new_register
+  when: repository == "customer_portal" 
   tags: 
     - always
-    - rhn
+    - repos
 
 - name: If first time - Disable all repos
   shell: subscription-manager repos --disable=*
-  when: new_register.changed or force_repos
+  when: repository == "customer_portal" and (new_register.changed or force_repos)
   tags: 
     - always
-    - rhn
+    - repos
 
-- name: Enable base repository
+- name: Enable base repository - subscription manager
   shell: subscription-manager repos --enable rhel-7-server-rpms
-  when: new_register.changed or force_repos
+  when: repository == "customer_portal" and (new_register.changed or force_repos)
   tags: 
     - always
-    - rhn
+    - repos
+
+- name: Enable base repository - yum repos
+  yum_repository:
+    name: rhel-7-server-rpms
+    description: rhel-7-server-rpms
+    baseurl: "{{ baseurl }}/rhel-7-server-rpms"
+    gpgcheck: no
+  when: repository == "yumrepo" 
+  register: yumrepo
+  tags:
+    - always
+    - repos
 
 ## yum update
 - name: update packages
   yum:
     name: '*'
     state: latest
-  tags:
-    - always
-    - rhn
   register: package_update
   # Initial update only.
   # Subsequent updates should be handled by another play
-  when: new_register.changed or force_repos
+  when: new_register.changed or force_repos or yumrepo.changed
+  tags:
+    - always
+    - package_install
 
 #- name: Reboot
 #  shell: sleep 5 && reboot

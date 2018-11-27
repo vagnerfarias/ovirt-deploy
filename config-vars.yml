@@ -4,7 +4,9 @@ root_pass: "r3dh4t1!"
 disk_image: "images/rhel-server-7.6-x86_64-kvm.qcow2"
 prepare_image: false
 force_repos: false
-disaster_recovery: true
+disaster_recovery: false
+repository: yumrepo
+baseurl: http://192.168.124.74/redhat
 
 #size in GB
 root_disk_size: "15"
@@ -123,4 +125,10 @@ dr_guests:
     ip_addr: 192.168.70.22
     vm_net: "{{ net_name }}"
     role: rhvh
-
+  ansible-engine:
+    mem: 1024
+    cpus: 1
+    os_type: rhel7
+    file_type: qcow2
+    ip_addr: 192.168.70.10
+    role: ansible

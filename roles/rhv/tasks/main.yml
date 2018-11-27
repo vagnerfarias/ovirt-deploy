@@ -1,8 +1,20 @@
 ---
 - block:
-  - name: Enable RHVM repositories
+  - name: Enable RHVM repositories - subscription manager
     shell: subscription-manager repos --enable {{ item }}
     with_items: "{{ rhvm_repos }}"
+    when: repository == "customer_portal"
+
+  - name: Enable RHVM repositories - yum repo
+    yum_repository:
+      name: "{{ item }}"
+      description: "{{ item }}"
+      baseurl: "{{ baseurl }}/{{ item }}"
+      gpgcheck: no
+    with_items: "{{ rhvm_repos }}"
+    when: repository == "yumrepo"
+
   become: yes
   tags:
     - repos
+

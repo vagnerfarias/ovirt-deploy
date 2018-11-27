@@ -29,6 +29,7 @@
     - ovirt_engine_setup_organization: 'rhvm.example.com'
     - ovirt_engine_setup_product_type: 'rhv'
     - ovirt_engine_setup_accept_defaults: true
+    - ovirt_engine_setup_organization: EXAMPLE
     - ovirt_engine_setup_package_list: 
       - firewalld
 
@@ -44,9 +45,20 @@
     - config-vars.yml
 
   tasks:
-    - name: Enable RHV hosts repositories
+    - name: Enable RHV hosts repositories - subscription manager
       shell: subscription-manager repos --enable {{ item }}
       with_items: "{{ rhvh_repos }}"
+      when: repository == "customer_portal"
+      tags: repos
+
+    - name: Enable RHV hosts repositories - yum repo
+      yum_repository:
+        name: "{{ item }}"
+        description: "{{ item }}"
+        baseurl: "{{ baseurl }}/{{ item }}"
+        gpgcheck: no
+      with_items: "{{ rhvh_repos }}"
+      when: repository == "yumrepo"
       tags: repos
 
 - name: Data Center configuration

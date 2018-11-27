@@ -1,18 +1,32 @@
 ---
-- name: Enable repository
+- name: Enable repository - subscription manager
   shell: subscription-manager repos --enable {{ item }}
   with_items: "{{ gluster_repos }}"
-  when: new_register.changed or force_repos
+  when: repository == "customer_portal" and (new_register.changed or force_repos)
+  tags:
+    - repos
+
+- name: Enable repository - yum repos
+  yum_repository:
+    name: "{{ item }}"
+    description: "{{ item }}"
+    baseurl: "{{ baseurl }}/{{ item }}"
+    gpgcheck: no
+  with_items: "{{ gluster_repos }}"
+  when: repository == "yumrepo"
+  tags:
+    - repos
 
 ## yum packages
 - name: install required packages
   yum:
     name: '{{ item }}'
-  tags:
-    - gluster
   with_items:
     - redhat-storage-server
   register: package_install
+  tags:
+    - gluster
+    - package_install
 
 - name: Reboot
   shell: sleep 5 && reboot

@@ -1,11 +1,22 @@
 ---
 - block:
-  - name: Enable repository
+  - name: Enable repository - subscription manager
     rhsm_repository: 
       name: rhel-7-server-ansible-2-rpms
-    #when: new_register.changed
+    when: repository == "customer_portal"
     tags:
       - repos
+
+  - name: Enable repository - yum repo
+    yum_repository: 
+      name: rhel-7-server-ansible-2-rpms
+      description: rhel-7-server-ansible-2-rpms
+      baseurl: "{{ baseurl }}/rhel-7-server-ansible-2-rpms"
+      gpgcheck: no
+    when: repository == "yumrepo"
+    tags:
+      - repos
+
 
   - name: install required packages
     yum:
@@ -13,6 +24,8 @@
     with_items:
       - ansible
       - gdeploy
+    tags:
+      - package_install
 
   - name: Copy gdeploy configuration file
     template:
