@@ -141,4 +141,4 @@ This playbook will:
 - configure a Data Center and a Cluster in RHV
 - configure Storage Domains
 
-RHV is know ready to be used.
+RHV is now ready to be used.
