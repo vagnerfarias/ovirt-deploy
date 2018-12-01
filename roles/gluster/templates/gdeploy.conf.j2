@@ -1,13 +1,13 @@
 [hosts]
 {# TODO: find a better way to identify if this is running on DR or PRD #}
 {% if ansible_hostname|regex_search('^dr-') %}
-{{ groups['gluster-dr'][0] }}
-{{ groups['gluster-dr'][1] }}
-{{ groups['gluster-dr'][2] }}
+{{ groups['gluster-backup'][0] }}
+{{ groups['gluster-backup'][1] }}
+{{ groups['gluster-backup'][2] }}
 {% else %}
-{{ groups['gluster-prd'][0] }}
-{{ groups['gluster-prd'][1] }}
-{{ groups['gluster-prd'][2] }}
+{{ groups['gluster-primary'][0] }}
+{{ groups['gluster-primary'][1] }}
+{{ groups['gluster-primary'][2] }}
 {% endif %}
 
 [pv1]
@@ -22,10 +22,10 @@ pvname=vdb
 ignore_vg_errors=no
 
 {% if ansible_hostname|regex_search('^dr-') %}
-{# {{ '[lv1:{' + groups['gluster-dr'][0] + ',' + groups['gluster-dr'][1] + '}]' }} #}
-[lv1:{{ '{' }}{{ groups['gluster-dr'][0] }},{{ groups['gluster-dr'][1] }}{{ '}' }}]
+{# {{ '[lv1:{' + groups['gluster-backup'][0] + ',' + groups['gluster-backup'][1] + '}]' }} #}
+[lv1:{{ '{' }}{{ groups['gluster-backup'][0] }},{{ groups['gluster-backup'][1] }}{{ '}' }}]
 {% else %}
-[lv1:{{ '{' }}{{ groups['gluster-prd'][0] }},{{ groups['gluster-prd'][1] }}{{ '}' }}]
+[lv1:{{ '{' }}{{ groups['gluster-primary'][0] }},{{ groups['gluster-primary'][1] }}{{ '}' }}]
 {% endif %}
 action=create
 poolname=gluster_thinpool_vdb
@@ -36,9 +36,9 @@ poolmetadatasize=100MB
 size=24GB
 
 {% if ansible_hostname|regex_search('^dr-') %}
-[lv2:{{ groups['gluster-dr'][2] }}]
+[lv2:{{ groups['gluster-backup'][2] }}]
 {% else %}
-[lv2:{{ groups['gluster-prd'][2] }}]
+[lv2:{{ groups['gluster-primary'][2] }}]
 {% endif %}
 action=create
 poolname=gluster_thinpool_vdb
@@ -49,9 +49,9 @@ poolmetadatasize=50MB
 size=9GB
 
 {% if ansible_hostname|regex_search('^dr-') %}
-[lv3:{{ '{' }}{{ groups['gluster-dr'][0] }},{{ groups['gluster-dr'][1] }}{{ '}' }}]
+[lv3:{{ '{' }}{{ groups['gluster-backup'][0] }},{{ groups['gluster-backup'][1] }}{{ '}' }}]
 {% else %}
-[lv3:{{ '{' }}{{ groups['gluster-prd'][0] }},{{ groups['gluster-prd'][1] }}{{ '}' }}] 
+[lv3:{{ '{' }}{{ groups['gluster-primary'][0] }},{{ groups['gluster-primary'][1] }}{{ '}' }}] 
 {% endif %}
 action=create
 lvname=gluster_lv_master
@@ -63,9 +63,9 @@ poolname=gluster_thinpool_vdb
 virtualsize=9GB
 
 {% if ansible_hostname|regex_search('^dr-') %}
-[lv4:{{ groups['gluster-dr'][2] }}]
+[lv4:{{ groups['gluster-backup'][2] }}]
 {% else %}
-[lv4:{{ groups['gluster-prd'][2] }}]
+[lv4:{{ groups['gluster-primary'][2] }}]
 {% endif %}
 action=create
 lvname=gluster_lv_master
@@ -77,9 +77,9 @@ poolname=gluster_thinpool_vdb
 virtualsize=1GB
 
 {% if ansible_hostname|regex_search('^dr-') %}
-[lv5:{{ '{' }}{{ groups['gluster-dr'][0] }},{{ groups['gluster-dr'][1] }}{{ '}' }}]
+[lv5:{{ '{' }}{{ groups['gluster-backup'][0] }},{{ groups['gluster-backup'][1] }}{{ '}' }}]
 {% else %}
-[lv5:{{ '{' }}{{ groups['gluster-prd'][0] }},{{ groups['gluster-prd'][1] }}{{ '}' }}]
+[lv5:{{ '{' }}{{ groups['gluster-primary'][0] }},{{ groups['gluster-primary'][1] }}{{ '}' }}]
 {% endif %}
 action=create
 lvname=gluster_lv_data
@@ -91,9 +91,9 @@ poolname=gluster_thinpool_vdb
 virtualsize=15GB
 
 {% if ansible_hostname|regex_search('^dr-') %}
-[lv6:{{ groups['gluster-dr'][2] }}]
+[lv6:{{ groups['gluster-backup'][2] }}]
 {% else %}
-[lv6:{{ groups['gluster-prd'][2] }}]
+[lv6:{{ groups['gluster-primary'][2] }}]
 {% endif %}
 action=create
 lvname=gluster_lv_data
@@ -127,9 +127,9 @@ replica_count=3
 key=group,storage.owner-uid,storage.owner-gid,network.ping-timeout,performance.strict-o-direct,network.remote-dio,cluster.granular-entry-heal,features.shard-block-size
 value=virt,36,36,30,on,off,enable,64MB
 {% if ansible_hostname|regex_search('^dr-') %}
-brick_dirs={{ groups['gluster-dr'][0] }}:/gluster_bricks/master/master,{{ groups['gluster-dr'][1] }}:/gluster_bricks/master/master,{{ groups['gluster-dr'][2] }}:/gluster_bricks/master/master
+brick_dirs={{ groups['gluster-backup'][0] }}:/gluster_bricks/master/master,{{ groups['gluster-backup'][1] }}:/gluster_bricks/master/master,{{ groups['gluster-backup'][2] }}:/gluster_bricks/master/master
 {% else %}
-brick_dirs={{ groups['gluster-prd'][0] }}:/gluster_bricks/master/master,{{ groups['gluster-prd'][1] }}:/gluster_bricks/master/master,{{ groups['gluster-prd'][2] }}:/gluster_bricks/master/master
+brick_dirs={{ groups['gluster-primary'][0] }}:/gluster_bricks/master/master,{{ groups['gluster-primary'][1] }}:/gluster_bricks/master/master,{{ groups['gluster-primary'][2] }}:/gluster_bricks/master/master
 {% endif %}
 ignore_volume_errors=no
 arbiter_count=1
@@ -143,9 +143,9 @@ replica_count=3
 key=group,storage.owner-uid,storage.owner-gid,network.ping-timeout,performance.strict-o-direct,network.remote-dio,cluster.granular-entry-heal,features.shard-block-size
 value=virt,36,36,30,on,off,enable,64MB
 {% if ansible_hostname|regex_search('^dr-') %}
-brick_dirs={{ groups['gluster-dr'][0] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-dr'][1] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-dr'][2] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }}
+brick_dirs={{ groups['gluster-backup'][0] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-backup'][1] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-backup'][2] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }}
 {% else %}
-brick_dirs={{ groups['gluster-prd'][0] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-prd'][1] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-prd'][2] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }}
+brick_dirs={{ groups['gluster-primary'][0] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-primary'][1] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }},{{ groups['gluster-primary'][2] }}:/gluster_bricks/{{ data_volname }}/{{ data_volname }}
 {% endif %}
 ignore_volume_errors=no
 arbiter_count=1

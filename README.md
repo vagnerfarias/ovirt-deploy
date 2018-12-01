@@ -29,43 +29,43 @@ The following variables from *config-vars.yml* must be configured according to y
 
 Create an ansible inventory file named *hosts* at the top directory of the cloned repository with content similar to the following, changing IP addresses it required.
 
-> [gluster-prd]  
+> [gluster-primary]  
 > 192.168.8.11  
 > 192.168.8.12  
 > 192.168.8.13  
 > 
-> [ovirt-engine-prd]  
+> [ovirt-engine-primary]  
 > 192.168.8.21 
 > 
-> [ovirt-hosts-prd]  
+> [ovirt-hosts-primary]  
 > 192.168.8.22  
 > 
-> [ovirt-prd:children]  
-> ovirt-engine-prd  
-> ovirt-hosts-prd  
+> [ovirt-primary:children]  
+> ovirt-engine-primary  
+> ovirt-hosts-primary  
 > 
 > [prd:children]  
-> ovirt-prd  
-> gluster-prd 
+> ovirt-primary  
+> gluster-primary 
 > 
-> [gluster-dr]  
+> [gluster-backup]  
 > 192.168.70.11  
 > 192.168.70.12  
 > 192.168.70.13  
 > 
-> [ovirt-engine-dr]  
+> [ovirt-engine-backup]  
 > 192.168.70.21  
 > 
-> [ovirt-hosts-dr]  
+> [ovirt-hosts-backup]  
 > 192.168.70.22  
 > 
-> [ovirt-dr:children]  
-> ovirt-engine-dr  
-> ovirt-hosts-dr 
+> [ovirt-backup:children]  
+> ovirt-engine-backup  
+> ovirt-hosts-backup 
 > 
 > [dr:children]  
-> ovirt-dr  
-> gluster-dr 
+> ovirt-backup  
+> gluster-backup 
 
 ### Optional: Deploy libvirt VMs
 If you'd like to use this only to learn how RHV and RHGS may work together, instead of deploying the software on physical servers, you may deploy everything on virtual machines and use nested virtualization features available in operating systems like Fedora 28 or Red Hat Enterprise Linux 7. 

@@ -1,6 +1,6 @@
 ---
 - name: Initial servers setup
-  hosts: ovirt-prd
+  hosts: ovirt-primary
   become: yes
   remote_user: "{{ reg_user }}"
   vars_files:
@@ -16,7 +16,7 @@
         tasks_from: prepare.yml
 
 - name: Setup oVirt Engine
-  hosts: ovirt-engine-prd
+  hosts: ovirt-engine-primary
   remote_user: "{{ reg_user }}"
   become: yes
   vars_files:
@@ -38,7 +38,7 @@
     - oVirt.engine-setup
 
 - name: Configure oVirt hosts
-  hosts: ovirt-hosts-prd
+  hosts: ovirt-hosts-primary
   become: yes
   remote_user: "{{ reg_user }}"
   vars_files:
@@ -62,7 +62,7 @@
       tags: repos
 
 - name: Data Center configuration
-  hosts: ovirt-engine-prd
+  hosts: ovirt-engine-primary
   #connection: local
   remote_user: "{{ reg_user }}"
   gather_facts: false
@@ -161,7 +161,7 @@
 
 
 #- name: Remove Default Data Center
-#  hosts: ovirt-engine-prd
+#  hosts: ovirt-engine-primary
 #  #connection: local
 #  remote_user: "{{ reg_user }}"
 #  gather_facts: false
