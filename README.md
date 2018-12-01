@@ -44,7 +44,7 @@ Create an ansible inventory file named *hosts* at the top directory of the clone
 > ovirt-engine-primary  
 > ovirt-hosts-primary  
 > 
-> [prd:children]  
+> [primary:children]  
 > ovirt-primary  
 > gluster-primary 
 > 
@@ -63,7 +63,7 @@ Create an ansible inventory file named *hosts* at the top directory of the clone
 > ovirt-engine-backup  
 > ovirt-hosts-backup 
 > 
-> [dr:children]  
+> [backup:children]  
 > ovirt-backup  
 > gluster-backup 
 
