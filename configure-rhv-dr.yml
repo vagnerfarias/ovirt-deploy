@@ -1,7 +1,7 @@
 ---
 # Disaster Recovery environment
 - name: Initial servers setup - Disaster Recovery
-  hosts: ovirt-backup
+  hosts: ovirt-backup,ansible
   become: yes
   remote_user: "{{ reg_user }}"
   vars_files:
@@ -16,6 +16,93 @@
         name: base_os
         tasks_from: prepare.yml
       when: disaster_recovery
+
+- name: Configure ansible host
+  hosts: ansible
+  remote_user: "{{ reg_user }}"
+  vars_files:
+    - config-vars.yml
+
+  tasks:
+
+    - name: Enable repository - subscription manager
+      shell: subscription-manager repos --enable {{ item }}
+      become: true
+      with_items: "{{ ansible_repos }}"
+      when: repository == "customer_portal" and (new_register.changed or force_repos)
+      tags:
+        - repos
+    
+    - name: Enable repository - yum repos
+      yum_repository:
+        name: "{{ item }}"
+        description: "{{ item }}"
+        baseurl: "{{ baseurl }}/{{ item }}"
+        gpgcheck: no
+      become: true
+      with_items: "{{ ansible_repos }}"
+      when: repository == "yumrepo"
+      tags:
+        - repos
+
+    - name: Install requirements
+      become: yes
+      yum:
+        name: git, ansible, ovirt-ansible-disaster-recovery, python-ovirt-engine-sdk4
+        state: latest
+      when: disaster_recovery
+      tags:
+        - packages
+
+    - name: Checkout disaster-recovery-demo playbooks
+      git:
+        repo: https://github.com/vagnerfarias/disaster-recovery-demo.git
+        dest: "/home/{{ reg_user }}/disaster-recovery"
+        version: ovirt-deploy-testing
+      tags:
+        - git-checkout
+      when: disaster_recovery
+
+    - name: Copy inventory to ansible host
+      copy:
+        src: hosts
+        dest: "/home/{{ reg_user }}/disaster-recovery/hosts"
+      when: disaster_recovery
+
+    # Fetch ssh host key from first ovirt host in inventory for primary and backup sites
+    # disaster recovery playbooks will connect to them during failover/failback
+    - name: Fetch ssh host keys - ovirt hosts 
+      lineinfile:
+        path: files/known_hosts-ovirt
+        create: yes
+        state: present
+        line: "{{ lookup('pipe', 'ssh-keyscan -t ecdsa-sha2-nistp256 '+item) }}"
+      with_items:
+        - "{{ groups['ovirt-hosts-primary'] }}"
+        - "{{ groups['ovirt-hosts-backup'] }}"
+      delegate_to: localhost
+      #run_once: true
+      tags: 
+        - hostkeys
+
+    - name: Copy known_hosts to ansible host
+      assemble:
+        src: ./files
+        dest: "/home/{{ reg_user }}/.ssh/known_hosts"
+        remote_src: no
+        regexp: ^known_hosts.*
+      tags:
+        - hostkeys
+          
+    - name: Copy ssh private key to ansible host
+      copy:
+        src: "{{ reg_user_sshkey_priv }}"
+        dest: "/home/{{ reg_user }}/.ssh/id_rsa"
+        owner: "{{ reg_user }}"
+        group: "{{ reg_user }}"
+        mode: 0600
+      tags: 
+        - sshkey
 
 - name: Setup oVirt Engine - Disaster Recovery
   hosts: ovirt-engine-backup
@@ -154,6 +241,7 @@
         ovirt_auth: "{{ ovirt_auth }}"
       tags:
         - always
+
 
 
 #- name: Remove Default Data Center - Disaster Recovery

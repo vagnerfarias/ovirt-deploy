@@ -6,7 +6,7 @@ prepare_image: false
 force_repos: false
 disaster_recovery: false
 repository: yumrepo
-baseurl: http://192.168.124.74/redhat
+baseurl: http://192.168.8.99/redhat
 
 #size in GB
 root_disk_size: "15"
@@ -14,6 +14,9 @@ root_disk_size: "15"
 reg_user: admin
 reg_user_pass: "r3dh4t1!"
 reg_user_sshkey: "/home/vfarias/.ssh/id_rsa.pub"
+# When using the ansible host for DR, it requires the corresponding private key
+# TODO: identify a better way to handle ssh keys
+reg_user_sshkey_priv: "/home/vfarias/.ssh/id_rsa"
 ssh_host_pub_key_file: /etc/ssh/ssh_host_ecdsa_key.pub
 
 data_volname: data
@@ -43,6 +46,10 @@ rhvh_repos:
 
 gluster_repos:
   - rh-gluster-3-for-rhel-7-server-rpms
+
+ansible_repos:    
+  - rhel-7-server-ansible-2-rpms
+  - rhel-7-server-rhv-4.2-manager-rpms
 
 guests:
   gluster01:
