@@ -71,18 +71,9 @@
   run_once: true
   tags: hostkeys
 
-- name: Copy known_hosts do gluster nodes
-  copy:
-    src: known_hosts
-    dest: /root/.ssh
-    owner: root
-    group: root
-    mode: 0644
-  tags: hostkeys
-
 - name: Fetch ssh host keys - disaster recovery
   lineinfile:
-    path: files/known_hosts-backup
+    path: files/known_hosts
     create: yes
     state: present
     line: "{{ lookup('pipe', 'ssh-keyscan -t ecdsa-sha2-nistp256 '+item) }}"
@@ -93,14 +84,13 @@
   when: disaster_recovery
   tags: hostkeys
 
-- name: Copy known_hosts do gluster nodes - disaster recovery
+- name: Copy known_hosts do gluster nodes
   copy:
-    src: known_hosts-backup
-    dest: /root/.ssh/known_hosts
+    src: known_hosts
+    dest: /root/.ssh
     owner: root
     group: root
     mode: 0644
-  when: disaster_recovery
   tags: hostkeys
 
 - name: Copy ssh private key to first gluster host
@@ -111,7 +101,8 @@
     group: root
     mode: 0600
   run_once: true
-  delegate_to: "{{ groups['gluster-primary'][0] }}"
+  when: inventory_hostname == groups['gluster-primary'][0]
+  #delegate_to: "{{ groups['gluster-primary'][0] }}"
   tags: sshkey
 
 - name: Copy ssh private key to first gluster host - disaster recovery
@@ -122,8 +113,8 @@
     group: root
     mode: 0600
   run_once: true
-  delegate_to: "{{ groups['gluster-backup'][0] }}"
-  when: disaster_recovery
+  #delegate_to: "{{ groups['gluster-backup'][0] }}"
+  when: disaster_recovery and inventory_hostname == groups['gluster-backup'][0]
   tags: sshkey
 
 - name: Add ssh key to authorized keys
