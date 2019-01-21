@@ -69,6 +69,25 @@
         dest: "/home/{{ reg_user }}/disaster-recovery/hosts"
       when: disaster_recovery
 
+    - name: "Ensure /home/{{ reg_user }}/.ssh directory exists"
+      file:
+        path: "/home/{{ reg_user }}/.ssh"
+        state: directory
+        owner: "{{ reg_user }}"
+        group: "{{ reg_user }}"
+        mode: 0700
+      tags: sshkey
+
+    #- name: Copy known_hosts do ansible node
+    #  copy:
+    #    src: known_hosts
+    #    dest: "/home/{{ reg_user }}/.ssh"
+    #    owner: "{{ reg_user }}"
+    #    group: "{{ reg_user }}"
+    #    mode: 0644
+    #  tags: hostkeys
+
+
     # Fetch ssh host key from first ovirt host in inventory for primary and backup sites
     # disaster recovery playbooks will connect to them during failover/failback
     - name: Fetch ssh host keys - ovirt hosts 
@@ -78,8 +97,8 @@
         state: present
         line: "{{ lookup('pipe', 'ssh-keyscan -t ecdsa-sha2-nistp256 '+item) }}"
       with_items:
-        - "{{ groups['ovirt-hosts-primary'] }}"
-        - "{{ groups['ovirt-hosts-backup'] }}"
+        - "{{ groups['ovirt-primary'] }}"
+        - "{{ groups['ovirt-backup'] }}"
       delegate_to: localhost
       #run_once: true
       tags: 
