@@ -58,7 +58,7 @@
         dest: "{{ vm_location}}/{{ item.key }}.{{ item.value.file_type }}"
       when: item.key not in disks.stdout and disaster_recovery
       with_dict: "{{ dr_guests }}"
-      register: new_disk
+      register: new_disk_dr
 
     - name: Generate guest IP address configuration file
       template:
@@ -98,7 +98,7 @@
               --selinux-relabel -a
               {{ vm_location}}/{{ item.key }}.{{ item.value.file_type }}
       with_dict: "{{ dr_guests }}"
-      when: new_disk.changed and item.key not in vms.list_vms and disaster_recovery
+      when: new_disk_dr.changed and item.key not in vms.list_vms and disaster_recovery
 
     - name: create vm
       command: >
@@ -122,5 +122,6 @@
       virt:
         name: "{{ item.key }}"
         state: running
+      when: disaster_recovery
       with_dict: "{{ dr_guests }}"
 
